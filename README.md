@@ -107,6 +107,6 @@ MIT
 - 添加更多使用示例
 - 优化响应格式
 
----
+## 友情链接
 
-Made with ❤️ for the developer community
+- [LINUX DO](https://linux.do) — 新的理想型社区
