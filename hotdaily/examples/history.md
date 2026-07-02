@@ -2,6 +2,8 @@
 
 ## 场景：用户想查看过去某天的日报或趋势
 
+这个例子展示历史查询：用户给日期，Agent 用公开历史日报 / 历史趋势接口回答。
+
 ---
 
 **用户**: `/hotdaily 给我看 6 月 20 号的日报`
@@ -69,15 +71,15 @@
 **Agent**:
 > 计算上周的锚点日期...
 
-*上周的周一是 6 月 17 日*
+*上周的周一是 6 月 15 日*
 
-*[调用 `curl -s "https://api.hotdaily.top/v1/trends?window=week&date=2026-06-17"`]*
+*[调用 `curl -s "https://api.hotdaily.top/v1/trends?window=week&date=2026-06-15"`]*
 
-> **本周技术趋势 (6月10-17日)**
+> **本周技术趋势**
 > 
 > 聚合过去 7 天的信号，发现 6 个跨日趋势：
 > 
-> ### 🔥 AI Agents 框架竞争加剧 (上升)
+> ### 🔥 AI Agents 框架竞争加剧 (升温)
 > 
 > **演变轨迹**：
 > - 6/11: LangChain 0.2 重大更新
@@ -102,11 +104,11 @@
 
 *[调用 `curl -s "https://api.hotdaily.top/v1/trends?window=month&date=2026-06-01"`]*
 
-> **5月技术趋势月报**
+> **月度技术趋势报告**
 > 
 > 聚合过去 30 天的信号，发现 8 个持续趋势：
 > 
-> ### 🔥 开源 LLM 性能持续逼近商业模型 (上升 → 持续)
+> ### 🔥 开源 LLM 性能持续逼近商业模型 (升温 → 持续)
 > 
 > **月度演变**：
 > - Llama 3 发布后持续优化
@@ -132,7 +134,7 @@
 > HotDaily API 目前**不支持全文搜索**，但可以：
 > 
 > 1. **按日期浏览**：`/hotdaily 给我看 6 月 X 号的日报`
-> 2. **查看归档列表**：访问 https://hotdaily.top/archive
+> 2. **查看趋势归档**：访问 https://hotdaily.top/trends
 > 3. **通过趋势找相关文章**：趋势报告会关联证据条目
 > 
 > 例如，如果想找"数据库"相关内容：
@@ -166,7 +168,7 @@
 > 
 > 无需认证，直接 GET 访问。响应格式都是 JSON。
 > 
-> 详细字段说明见：https://github.com/Done-0/hotdaily-skill/blob/main/hotdaily.md
+> 详细字段说明见 skill 仓库内的 `hotdaily/SKILL.md`
 
 ---
 

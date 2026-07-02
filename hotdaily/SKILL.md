@@ -38,7 +38,7 @@ HotDaily 是一个由 AI 驱动的科技与创业精选日报，每天从 Hacker
 **今日趋势**  
 `GET https://api.hotdaily.top/v1/trends/today`
 
-返回当日技术趋势信号、强度曲线、影响分析、证据条目。每个趋势包含：标题、摘要、为什么重要、状态（rising/sustained/cooling）、置信度、影响力、证据来源。
+返回当日技术趋势信号、强度曲线、证据条目。每个趋势包含：标题、摘要、为什么重要、状态（new/heating/sustained/cooling）、置信度、强度分数、证据来源。
 
 **周报/月报**  
 `GET https://api.hotdaily.top/v1/trends?window={window}&date={date}`
@@ -60,26 +60,27 @@ HotDaily 是一个由 AI 驱动的科技与创业精选日报，每天从 Hacker
 
 获取单篇文章的完整信息：标题、URL、价值理由、完整摘要、审核信息、阅读时长、正文（如果可渲染）。
 
-# 响应格式说明
+# 常见返回字段
 
-## DigestVO（日报）
+## 日报接口常见字段
 
 ```json
 {
   "date": "2026-06-22",
   "edition": "晚报",
-  "dateLabel": "6 月 22 日",
+  "serverDate": "2026-06-22",
   "readCount": 156,
   "selectedCount": 30,
   "qualifiedCount": 45,
-  "stories": [
+  "items": [
     {
       "id": "0a831d51-33eb-4963-931c-240d82ceba84",
       "title": "Article Title in English",
       "url": "https://example.com/article",
       "valueLight": "green",
-      "valueReason": "为什么值得读的中文理由",
-      "summaryTriageZh": "中文摘要",
+      "reason": "为什么值得读的中文理由",
+      "valueVerdict": "一句中文判词",
+      "summaryZh": "中文摘要",
       "readingMinutes": 5,
       "source": "hacker-news",
       "signals": {
@@ -97,24 +98,26 @@ HotDaily 是一个由 AI 驱动的科技与创业精选日报，每天从 Hacker
 - `readCount`: AI 替读者读过的文章总数
 - `selectedCount`: 日报精选数量（默认 30 篇）
 - `qualifiedCount`: 达标总数（包含溢出到 /more 的）
-- `typeTag`: `research`（研究论文）/ `launch`（产品发布）/ `news`（新闻）/ `blog`（技术博客）/ `discussion`（讨论）
+- `reason`: 中文价值理由
+- `valueVerdict`: 面向读者的一句中文判词，可能为 `null`
+- `summaryZh`: 一句话中文摘要，可能为 `null`
 
-## TrendSnapshotVO（趋势）
+## 趋势接口常见字段
 
 ```json
 {
   "window": "today",
-  "date": "2026-06-22",
-  "generatedAt": "2026-06-22T04:15:32.123Z",
+  "anchorDate": "2026-06-22",
+  "generatedAt": 1782072932123,
   "trends": [
     {
+      "id": "trend:today:abc",
       "title": "AI 模型路由成为基础设施新热点",
       "summary": "多家公司推出模型路由解决方案，自动选择最优模型处理请求",
       "whyItMatters": "降低成本同时提升响应质量，成为 AI 应用的关键中间层",
-      "category": "infrastructure",
-      "status": "rising",
+      "status": "heating",
+      "score": 91,
       "confidence": "high",
-      "impact": "high",
       "sparkline": [3, 5, 7, 9],
       "evidence": [
         {
@@ -130,13 +133,12 @@ HotDaily 是一个由 AI 驱动的科技与创业精选日报，每天从 Hacker
 ```
 
 **字段说明**：
-- `category`: `ai`（AI/ML）/ `infrastructure`（基础设施）/ `product`（产品）/ `platform`（平台）/ `policy`（政策法规）
-- `status`: `rising`（上升）/ `sustained`（持续）/ `cooling`（降温）
+- `status`: `new`（新出现）/ `heating`（升温）/ `sustained`（持续）/ `cooling`（降温）
 - `confidence`: `high` / `medium` / `low`
-- `impact`: `high` / `medium` / `low`
+- `score`: 趋势强度分数
 - `sparkline`: 强度曲线数值数组，用于可视化趋势强度变化
 
-## ItemDetailVO（条目详情）
+## 条目详情接口常见字段
 
 ```json
 {
@@ -154,8 +156,9 @@ HotDaily 是一个由 AI 驱动的科技与创业精选日报，每天从 Hacker
     "charCount": 5234
   },
   "review": {
-    "quality": "high",
-    "compliance": "safe"
+    "quality": "ok",
+    "compliance": "pass",
+    "note": ""
   }
 }
 ```
@@ -167,6 +170,12 @@ HotDaily 是一个由 AI 驱动的科技与创业精选日报，每天从 Hacker
 - `abstract`: 学术论文摘要
 - `summary`: 仅摘要
 - `none`: 无正文
+
+用户侧理解方式：
+
+- 列表页主要看：`title`、`valueLight`、`reason`、`valueVerdict`、`summaryZh`
+- 趋势页主要看：`title`、`summary`、`whyItMatters`、`status`、`evidence`
+- 详情页主要看：`valueReason`、`summaryTriageZh`、`summaryDetailZh`、`content`
 
 # 使用模式
 
@@ -189,7 +198,7 @@ curl -s https://api.hotdaily.top/v1/trends/today
 
 **呈现建议**：
 - 每个趋势给出：标题、摘要、为什么重要
-- 标注状态（🔥 上升 / 🔄 持续 / ❄️ 降温）
+- 标注状态（🆕 新出现 / 🔥 升温 / 🔄 持续 / ❄️ 降温）
 - 列出主要证据来源（2-3 个代表性条目）
 
 ## 3. 用户问"AI 基础设施最近怎么样"
@@ -198,7 +207,7 @@ curl -s https://api.hotdaily.top/v1/trends/today
 curl -s "https://api.hotdaily.top/v1/trends?window=week"
 ```
 
-筛选 `category` 包含 `infrastructure` 或 `ai` 的趋势，总结演变方向。
+按标题、摘要、`whyItMatters` 与证据条目判断哪些趋势属于 AI / 基础设施方向，再总结演变方向。
 
 ## 4. 用户问"给我看 6 月 20 号的日报"
 
@@ -214,13 +223,13 @@ curl -s https://api.hotdaily.top/v1/items/{id}
 
 展示完整摘要、价值分析、原文链接；如果 `bodyKind` 是 `full` 或 `native`，可以展示正文摘录。
 
-# 调用示例
+# 调用示例（给使用接口的人）
 
-使用 `Bash` 工具调用 API：
+如果用户或代理要直接调公开接口，可以这样读：
 
 ```bash
 # 获取今日日报
-curl -s https://api.hotdaily.top/v1/digests/today | jq '.stories[] | {title, valueLight, valueReason}'
+curl -s https://api.hotdaily.top/v1/digests/today | jq '.items[] | {title, valueLight, reason}'
 
 # 获取今日趋势
 curl -s https://api.hotdaily.top/v1/trends/today | jq '.trends[] | {title, summary, status}'
@@ -229,7 +238,7 @@ curl -s https://api.hotdaily.top/v1/trends/today | jq '.trends[] | {title, summa
 curl -s "https://api.hotdaily.top/v1/trends?window=week" | jq '.trends[0]'
 ```
 
-# 注意事项
+# 使用注意
 
 - **API 无需认证**，直接 GET 访问
 - **今日日报和趋势不缓存**，实时更新
@@ -239,7 +248,7 @@ curl -s "https://api.hotdaily.top/v1/trends?window=week" | jq '.trends[0]'
 - **如果 API 返回 404**，说明该日期尚未出报或趋势尚未生成
 - **内容语言**：标题为英文原题，摘要、理由、趋势分析均为中文
 
-# 典型对话模式
+# 典型用法
 
 **用户**: 今天有什么值得读的？
 
@@ -255,8 +264,9 @@ curl -s "https://api.hotdaily.top/v1/trends?window=week" | jq '.trends[0]'
 
 **助手行为**：
 1. 调用 `/v1/trends/today`
-2. 筛选 `category` 包含 `ai` 的趋势
+2. 按标题、摘要、证据判断是否属于 AI 领域
 3. 每个趋势给出：标题、摘要、为什么重要、状态（🔥/🔄/❄️）
+   如需贴中文标签，建议映射为：`new=新出现`、`heating=升温`、`sustained=持续`、`cooling=降温`
 4. 可选：列出 2-3 个代表性证据条目
 
 ---
@@ -265,8 +275,8 @@ curl -s "https://api.hotdaily.top/v1/trends?window=week" | jq '.trends[0]'
 
 **助手行为**：
 1. 调用 `/v1/trends?window=week`
-2. 展示所有趋势，按 `impact` 排序
-3. 每个趋势注明演变方向（rising/sustained/cooling）
+2. 展示所有趋势，按接口返回顺序讲解（通常已按强度排序）
+3. 每个趋势注明演变方向（new/heating/sustained/cooling）
 
 ---
 
@@ -279,9 +289,10 @@ curl -s "https://api.hotdaily.top/v1/trends?window=week" | jq '.trends[0]'
 4. 如果有正文（`bodyKind` 是 `full`），可摘录关键段落
 5. 给出原文链接
 
-# API 稳定性
+# 呈现原则
 
-- 所有端点均已生产验证
-- 响应格式稳定，字段名不会变更
-- 新增字段向后兼容，旧字段不会删除
-- 缓存策略：实时面不缓存，历史面边缘缓存 1-6 小时
+- 优先给用户中文摘要和中文价值理由，不要直接甩原始 JSON
+- 标题通常保留英文原题，便于用户搜索原文
+- 用户要“最近有什么趋势”，优先先看 `today`
+- 用户要“本周/本月”，再切到 `week` / `month`
+- 用户要深挖某篇，再调 `/v1/items/{id}`

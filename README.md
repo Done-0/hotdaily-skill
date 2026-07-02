@@ -26,6 +26,16 @@ npx skills add https://github.com/Done-0/hotdaily-skill --skill hotdaily
 /hotdaily 分析本周基础设施趋势
 ```
 
+这个 skill 面向普通用户查询：
+
+- 今日日报
+- 历史日报
+- 今日趋势
+- 周报 / 月报
+- 单篇条目详情
+
+不需要了解站内实现细节，只需要调用公开只读接口。
+
 ## 示例对话
 
 ### 获取今日精选
@@ -50,7 +60,7 @@ npx skills add https://github.com/Done-0/hotdaily-skill --skill hotdaily
 **Agent**:
 > 今日 AI 领域 3 个趋势：
 > 
-> 🔥 **AI 模型路由成为基础设施新热点** (上升)
+> 🔥 **AI 模型路由成为基础设施新热点** (升温)
 > 多家公司推出模型路由解决方案，自动选择最优模型处理请求。降低成本同时提升响应质量，成为 AI 应用的关键中间层。
 > 证据: OpenRouter 新算法、Martian 发布、LangChain 集成
 > 
@@ -62,10 +72,10 @@ npx skills add https://github.com/Done-0/hotdaily-skill --skill hotdaily
 **你**: `/hotdaily 给我看本周技术趋势报告`
 
 **Agent**:
-> 本周(6月15-22日)聚合趋势 5 个：
+> 本周聚合趋势 5 个：
 > 
 > **高影响趋势**
-> - AI 推理成本下降加速 (上升 → 持续)
+> - AI 推理成本下降加速 (升温 → 持续)
 > - 边缘计算框架成熟度提升 (持续)
 > ...
 
@@ -79,12 +89,17 @@ HotDaily Skill 调用以下公开 API：
 |------|------|
 | `/v1/digests/today` | 今日日报 |
 | `/v1/digests/{date}` | 历史日报 |
+| `/v1/digests` | 日报归档 |
+| `/v1/more?page=N` | 更多精选 |
 | `/v1/trends/today` | 今日趋势 |
 | `/v1/trends?window=week` | 周报 |
 | `/v1/trends?window=month` | 月报 |
+| `/v1/trends/archive` | 趋势归档 |
 | `/v1/items/{id}` | 条目详情 |
 
 完整 API 文档：https://api.hotdaily.top
+
+这些接口都是公开只读接口，适合给用户查内容、看趋势、看历史。
 
 ## 关于 HotDaily
 
