@@ -58,22 +58,29 @@ HotDaily 是一个由 AI 驱动的科技与创业精选日报，每天从 Hacker
 **机会时间线（雷达）**
 `GET https://api.hotdaily.top/v1/opportunities/radar?window={window}&limit={N}`
 
-返回最近 N 条机会卡片，按日期倒序。每张卡：问题标题、问题定义、空白分析、置信度、证据数与证据列表。
+返回最近机会卡片，同时提供两种视图：
+
+- `opportunities`：扁平时间线（按生成时间倒序，`limit` 条，上限 30）——首页轮播与简单列表用
+- `days`：按锚点日期分组（最近 30 天），每天含 `count`（该日机会条数）与 `opportunities` 数组（同日内按生成时间正序）——机会归档页用
+
+每张卡：问题标题、问题定义、空白分析、置信度、证据数与证据列表。
 
 - `window`: `today` | `week` | `month`，可选，缺省全部窗口
-- `limit`: 返回条数，可选
+- `limit`: 扁平视图条数，可选（默认 14，上限 30）
 
 **指定日期机会研究**
 `GET https://api.hotdaily.top/v1/opportunities?window={window}&date={date}`
 
-返回某天某窗口的完整机会研究卡片。`window` 必填（`today` | `week` | `month`）；`date` 可选（锚点日期，默认该窗口最新一期）。
+返回某天某窗口的全部机会卡片（`opportunities` 数组，可能 0 条）。`window` 必填（`today` | `week` | `month`）；`date` 可选（锚点日期，默认该窗口最新一期）。
 
 **单条机会详情**
 `GET https://api.hotdaily.top/v1/opportunities/{id}`
 
 按 id 获取单条机会的完整研究：问题、现有方案、空白、业务流程、验收标准、技术要求、验证计划、风险、证据。
 
-**生成机制**：AI 每天从已读语料里挖机会，有真机会就发、没有就不发（宁缺毋滥）——没挖到的日期没有卡片，属正常现象。日→周→月逐级生成，历史日期由回填自动补齐。
+**生成机制**：一天读过的语料横跨多个领域，所以**一个日期可以有多条彼此不同的机会**（当前每日上限 5 条）。每个研究心跳（约 6 分钟）挖一条新的：把已挖到的问题标题喂给模型，要求找不同的新机会；模型找不出新的（found=false）或与已有标题相似度过高时写一条「挖尽」标记收口，当期不再重试。早/午/晚报每次重新出版（新 digest id）会重新开放挖掘，用当天新增语料继续找新机会。周机会在周一、月机会在月初同样各挖多条。**没有挖到机会的日期一张卡也没有**（宁缺毋滥）。
+
+机会归档页（/opportunities）按日期成行，一行显式标「N 条机会」，悬浮展开本日全部卡片，点击进入最强（高把握优先）那条的详情页。所有机会详情页（/o/:id）与归档页均已收录进 sitemap.xml。
 
 ### 搜索
 
@@ -168,6 +175,8 @@ HotDaily 是一个由 AI 驱动的科技与创业精选日报，每天从 Hacker
 - `sparkline`: 强度曲线数值数组，用于可视化趋势强度变化
 
 ## 机会接口常见字段
+
+radar 接口的 `opportunities`（扁平）与 `days[].opportunities`（按日期分组）里的每张卡，字段完全相同：
 
 ```json
 {
@@ -411,7 +420,8 @@ curl -s "https://api.hotdaily.top/v1/search?q=模型路由" | jq '.items[] | {ti
 1. 调用 `/v1/opportunities/radar?limit=10`
 2. 每条机会给出：问题（`problem`）、空白（`gapAnalysis`）、置信度（`confidence` → 高把握/中把握/低把握）
 3. 挑 2-3 条展开：问题定义 → 现有方案的 pros/cons → 怎么做（`businessProcess`）→ 怎么算成（`acceptanceCriteria`）
-4. 提示：AI 每天从已读语料里挖，有就发、没有就不发
+4. 同一天可能有多条不同领域的机会——讲解时按 `anchorDate` 分组，说明哪些是同一天挖到的
+5. 提示：有真机会就发、没有就不发；一天最多 5 条，早/午/晚报后可能继续补挖
 
 ---
 
